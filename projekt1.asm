@@ -40,10 +40,8 @@ kod segment
 		push ax
 		push bx
 		push cx
-		push dx
 	endm
 	przywroc_rejestry macro
-		pop dx
 		pop cx
 		pop bx
 		pop ax
@@ -52,7 +50,11 @@ kod segment
 	;---- WCZYTAJ ----
 	;wczytanie danych do tablicy, bez bialych znakow
 	WCZYTAJ proc
-		odloz_rejestry
+		push ax
+		push bx
+		push cx
+		push di
+		push si
 		
 		mov di,offset tab_dane			;zaladowanie DI offsetem tablicy docelowej
 		mov si,82h						;zaladowanie SI adresem pierwszego znaku argumentow
@@ -95,20 +97,23 @@ kod segment
 		inc ds:[iarg]					;zwiekszenie licznika argumentow
 
 		cmp ds:[iarg],ARG				; 
-		ja err_za_duzo_arg				;TODO
+		ja err_za_duzo_arg				;
 		
 		inc bx							;przesun sie o jeden w tablicy dlugosci i adresow argumentow
 		mov [bx],di					;zapisz aktualny adres (poczatek argumentu)
 		inc bx							;znowu przesun sie o jeden, tamze bedzie zliczana dlugosc danego argumentu
 		
 	dalej:
-		inc di							;przesun sie o jeden w tablicy docelowej
-		mov dh,1d
-		add [bx],dh					;zwiekszenie licznika dlugosci danego argumentu
+		inc di							;przesun sie o jeden w tablicy docelowej					
+		add byte ptr [bx],1d			;zwiekszenie licznika dlugosci danego argumentu
 		jmp kolejny_znak
 			
 	koniec:
-		przywroc_rejestry
+		pop si
+		pop di
+		pop cx
+		pop bx
+		pop ax
 		ret		
 	WCZYTAJ endp
 	;=================
@@ -117,7 +122,11 @@ kod segment
 	;--- KONTROLA ----
 	;kontrola danych
 	KONTROLA proc
-		odloz_rejestry
+		push ax
+		push bx
+		push cx
+		push dx
+		push di
 		
 		;kontrola dlugosci argumentow
 		mov bx,offset parg				;zaladowanie BX offsetem tablicy parametrow argumentow
@@ -183,7 +192,11 @@ kod segment
 			jmp kolejny_znak
 		
 		koniec:
-			przywroc_rejestry
+			pop di
+			pop dx
+			pop cx
+			pop bx
+			pop ax
 			ret
 	KONTROLA endp
 	;=================
@@ -193,7 +206,11 @@ kod segment
 	;pary cyfr heksadecymalnych
 	;zamienia na 1 bajtowe liczby binarne
 	HEXBIN proc
-		odloz_rejestry
+		push ax
+		push cx
+		push dx
+		push di
+		push si
 	
 		mov si,offset tab_dane			;SI-source index, zaladowany offsetem tablicy danych argumentow
 		inc si							;aby byc na poczatku cyfr hex, pierwsza w tab_dane jest flaga 0/1
@@ -218,7 +235,11 @@ kod segment
 			cmp ch,0d					;czy wszystkie pary zostaly przeanalizowane?
 			jne kolejna_para			;jesli nie, analizuj kolejna pare
 	
-		przywroc_rejestry
+		pop si
+		pop di
+		pop dx
+		pop cx
+		pop ax
 		ret
 	HEXBIN endp
 	;=================
@@ -227,7 +248,11 @@ kod segment
 	;--ANALIZA_BITOW--
 	;16 bajtow * 4 pary bitow
 	ANALIZA_BITOW proc
-			odloz_rejestry
+			push ax
+			push cx
+			push dx
+			push di
+			push si
 	
 			mov di,offset tab_bin			;zaladowanie DI offsetem tablicy zawierajacej binarna reprezentacje skrotu klucza
 			mov ch,17d						;iterator petli glownej (do analizy jest 16 bajtow) 		;17, bo na poczatku petli 'dec'
@@ -276,7 +301,11 @@ kod segment
 		
 		koniec:
 			mov ds:[pole_kon],si			;zapisanie pola w ktorym goniec / skoczek zakonczyl ruchy
-			przywroc_rejestry
+			pop si
+			pop di
+			pop dx
+			pop cx
+			pop ax
 			ret
 	ANALIZA_BITOW endp
 	;=================
@@ -429,6 +458,9 @@ kod segment
 	;na odpowiednie znaki ASCII
 	KONWERTUJ proc
 		odloz_rejestry
+		push dx
+		push di
+		push si
 		
 		mov si,offset tab_ascii				;w SI beda znaki ASCII (wg.tabeli)
 		mov di,offset tab_szach				;w DI szachownica z ilosciami odwiedzin na polach
@@ -444,13 +476,13 @@ kod segment
 			mov ah,ds:[di]					;wartosc aktualnego pola zaladuj do AH
 			cmp ah,0d						;czy pole ma wartosc 0?
 			je kolejne_pole					;jesli tak pozostaw puste pole, i analizuj kolejne
-			;
+			
 			cmp ah,14d						
 			jae ponad						;jesli pole zostalo odwiedzone >=14 razy -> zamien na '^'
 			
 			mov bl,ds:[di]					;wartosc aktualnego pola do BL								; ?????
 			dec bl
-			mov dh,ds:[si+bx]			;adekwatny znak ascii do DH
+			mov dh,ds:[si+bx]				;adekwatny znak ascii do DH
 			mov ds:[di],dh					;tenze znak zapisac w aktualnym polu szachownicy
 			jmp kolejne_pole
 		
@@ -468,6 +500,9 @@ kod segment
 			mov dl,"E"
 			mov ds:[bx],dl					;tamze "E"
 			
+		pop si
+		pop di
+		pop dx
 		przywroc_rejestry
 		ret
 	KONWERTUJ endp
@@ -477,7 +512,11 @@ kod segment
 	;-----DRUKUJ------
 	;wydrukowanie ASCII-Art
 	DRUKUJ proc
-		odloz_rejestry
+		push ax
+		push cx
+		push dx
+		push di
+		push si
 		
 		mov si,offset tab_szach				;do SI poczatek szachownicy
 		mov cl,9d							;CL bedzie licznikiem wierszy
@@ -523,7 +562,11 @@ kod segment
 		mov ah,9
 		int 21h								;wydrukowanie tejze ramki
 					
-		przywroc_rejestry
+		pop si
+		pop di
+		pop dx
+		pop cx
+		pop ax
 		ret
 	DRUKUJ endp
 	;=================
@@ -532,6 +575,8 @@ kod segment
 
 		program:
 			;PSP do rejestru ES
+			mov ah, 62h
+			int 21h
 			mov bx,ds
 			mov es,bx
 			
