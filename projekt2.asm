@@ -5,14 +5,14 @@
 ; +++++++++++++++++
 CR		equ	13d 
 LF		equ	10d
-ARG		equ 3						;maksymalna ilosc argumentow
+ARG		equ	3						;maksymalna ilosc argumentow
 BS		equ	512						;buffer size
-POLY	equ 8001h					;wielomian do obliczania sum CRC
+POLY	equ	8001h					;wielomian do obliczania sum CRC
 
 daneA segment
-	tab_dane	db	128 dup (?) 	;tablica do ktorej zostana wczytane dane wejsciowe (argumenty z linii polecen)
+	tab_dane	db	128	dup (?)		;tablica do ktorej zostana wczytane dane wejsciowe (argumenty z linii polecen)
 	tab_crc		dw	256	dup (?)		;tablica pomocnicza do obliczania CRC
-	tab_crc_hex	db  4   dup (?)	    ;suma CRC do zapisu (w postaci heksadecymalnej)
+	tab_crc_hex	db	4	dup (?)		;suma CRC do zapisu (w postaci heksadecymalnej)
 	
 	iarg 		db	0d				;ilosc argumentow
 	parg 		db	ARG*2 dup (0)	;parametry poszczegolnych argumentow: adres1,dlugosc1,adres2,dlugosc2,...
@@ -22,18 +22,18 @@ daneA segment
 	crc			dw	1				;zmienna do obliczania wartosci sumy kontrolnej CRC
 	crctmp		dw  1
 	
-	fin1 		db  64  dup (?) 	;nazwa pliku do odczytu (input/input1).                 
-	fin2 		db  64  dup (?) 	;nazwa pliku do odczytu (intput2).                 
-	fon 		db  64	dup (?) 	;nazwa pliku do zapisu (output).
-	handle1 	dw  ?              	;uchwyt do pliku 1                
-	handle2 	dw  ?              	;uchwyt do pliku 2                
-	buffer		db  BS  dup (?) 	;bufor
-	bufpos		dw  0 				;pozycja w buforze	
+	fin1 		db  64  dup (?)		;nazwa pliku do odczytu (input/input1).                 
+	fin2 		db  64  dup (?)		;nazwa pliku do odczytu (intput2).                 
+	fon 		db  64	dup (?)		;nazwa pliku do zapisu (output).
+	handle1 	dw  ?				;uchwyt do pliku 1                
+	handle2 	dw  ?				;uchwyt do pliku 2                
+	buffer		db  BS  dup (?)		;bufor
+	bufpos		dw  0				;pozycja w buforze	
 	bufchars	dw  0				;ilosc znakow w buforze
 	char		db	0				;pojedynczy znak
 	eof			db  0				;flaga konca pliku
-	
-	buffer_crc	db  4   dup (?)     ;bufor do odczytu sumy kontrolnej z pliku input2
+
+	buffer_crc	db  4   dup (?)		;bufor do odczytu sumy kontrolnej z pliku input2
 		
 	;------------------
 	;komunikaty i bledy
