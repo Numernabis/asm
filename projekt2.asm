@@ -1,3 +1,5 @@
+.286
+
 ; Ludwik Ciechanski
 ; 
 ; PROJEKT 2
@@ -56,23 +58,15 @@ stosA ends
 
 code segment
 	;=================
-	macro odloz_rejestry
-		push ax
-		push bx
-		push cx
-		push dx
-	endm
-	macro przywroc_rejestry
-		pop dx
-		pop cx
-		pop bx
-		pop ax
-	endm
+	
 	;=================
 	;---- WCZYTAJ ----
 	;wczytanie danych do tablicy, bez bialych znakow
 	WCZYTAJ proc
-		odloz_rejestry
+		push ax
+		push bx
+		push cx
+		push dx
 		push di
 		push si
 		
@@ -128,7 +122,10 @@ code segment
 	koniec:
 		pop si
 		pop di
-		przywroc_rejestry
+		pop dx
+		pop cx
+		pop bx
+		pop ax
 		ret		
 	WCZYTAJ endp
 	;=================
@@ -137,7 +134,10 @@ code segment
 	;--- KONTROLA ----
 	;kontrola danych
 	KONTROLA proc
-		odloz_rejestry
+		push ax
+		push bx
+		push cx
+		push dx
 		push di
 		
 		;kontrola ilosci argumentow
@@ -168,7 +168,10 @@ code segment
 		
 	koniec:
 		pop di
-		przywroc_rejestry
+		pop dx
+		pop cx
+		pop bx
+		pop ax
 		ret
 	KONTROLA endp
 	;=================
@@ -187,7 +190,10 @@ code segment
 	;-- OTWORZ_PLIKI -
 	;otwarcie stosownych plikow
 	OTWORZ_PLIKI proc
-		odloz_rejestry
+		push ax
+		push bx
+		push cx
+		push dx
 		push di
 		push si
 	
@@ -258,7 +264,10 @@ code segment
 	koniec:
 		pop si
 		pop di
-		przywroc_rejestry
+		pop dx
+		pop cx
+		pop bx
+		pop ax
 		ret
 	OTWORZ_PLIKI endp
 	;=================
@@ -267,7 +276,10 @@ code segment
 	; INICJUJ_TABLICE 
 	;wypelnienie tablicy tab_crc wartosciami potrzebnymy do obliczenia sumy kontrolnej CRC
 	INICJUJ_TABLICE proc
-		odloz_rejestry
+		push ax
+		push bx
+		push cx
+		push dx
 		push di
 	
 		xor dx,dx
@@ -306,7 +318,10 @@ code segment
 		
 	koniec:
 		pop di
-		przywroc_rejestry
+		pop dx
+		pop cx
+		pop bx
+		pop ax
 		ret
 	INICJUJ_TABLICE endp
 	;=================
@@ -341,7 +356,10 @@ code segment
 	;--- GET_CHAR ----
 	;pobiera jeden znak z bufora, w razie potrzeby laduje bufor
 	GET_CHAR proc
-		odloz_rejestry
+		push ax
+		push bx
+		push cx
+		push dx
 
 		mov ax,ds:[bufpos]
 		mov dx,ds:[bufchars]
@@ -372,7 +390,10 @@ code segment
 	end_of_file:
 		mov ds:[eof],1d				;koniec pliku
 	go_back:     
-		przywroc_rejestry
+		pop dx
+		pop cx
+		pop bx
+		pop ax
 		ret
 	GET_CHAR endp
 	;=================
@@ -381,7 +402,10 @@ code segment
 	;-- OBLICZ_CRC ---
 	;oblicza sume kontrolna CRC dla pliku input/input1
 	OBLICZ_CRC proc
-		odloz_rejestry
+		push ax
+		push bx
+		push cx
+		push dx
 		push si
 
 		xor ax,ax
@@ -412,7 +436,10 @@ code segment
 		xor ds:[crc],cx				;crc = crc XOR (2^16 -1)
 		
 		pop si
-		przywroc_rejestry
+		pop dx
+		pop cx
+		pop bx
+		pop ax
 		ret
 	OBLICZ_CRC endp
 	;=================
@@ -421,7 +448,10 @@ code segment
 	;- ZAMIEN_NA_HEX -
 	;obliczona sume kontrolna zamienia na postac hex
 	ZAMIEN_NA_HEX proc
-		odloz_rejestry
+		push ax
+		push bx
+		push cx
+		push dx
 		push si
 
 		mov ax,ds:[crc]				;suma CRC do AX
@@ -450,7 +480,10 @@ code segment
 		jne zapisz_cyfre	
 		
 		pop si
-		przywroc_rejestry
+		pop dx
+		pop cx
+		pop bx
+		pop ax
 		ret
 	ZAMIEN_NA_HEX endp
 	;=================
@@ -459,7 +492,10 @@ code segment
 	;-ZAPISZ_DO_PLIKU-
 	;obliczona sume CRC w postaci heksadecymalnej zapisuje do pliku output
 	ZAPISZ_DO_PLIKU proc
-		odloz_rejestry
+		push ax
+		push bx
+		push cx
+		push dx
 
 		mov bx,ds:[handle2]            ;uchwyt pliku do zapisu w BX
 		mov cx,4d					    ;liczba bajtow do zapisania
@@ -468,7 +504,10 @@ code segment
 		int 21h
 		jc err_file_save                ;w razie problemu skok do komunikatu
 		
-		przywroc_rejestry
+		pop dx
+		pop cx
+		pop bx
+		pop ax
 		ret
 	ZAPISZ_DO_PLIKU endp
 	;=================
@@ -477,7 +516,10 @@ code segment
 	;--POROWNAJ_CRC --
 	;porownuje zgodnosc obliczonej sumy CRC pliku input1 oraz sumy zapisanej w pliku input2
 	POROWNAJ_CRC proc
-		odloz_rejestry
+		push ax
+		push bx
+		push cx
+		push dx
 		push di
 		push si
 		
@@ -514,7 +556,10 @@ code segment
 	koniec:
 		pop si
 		pop di
-		przywroc_rejestry
+		pop dx
+		pop cx
+		pop bx
+		pop ax
 		ret
 	POROWNAJ_CRC endp
 	;=================
