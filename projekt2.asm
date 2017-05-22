@@ -1,15 +1,16 @@
-.286
-
 ; Ludwik Ciechanski
 ; 
 ; PROJEKT 2
 ; cykliczny kod nadmiarowy
+; na podstawie: http://www.algorytm.org/sumy-kontrolne/cykliczna-kontrola-nadmiarowa/crc-c.html
+; algorytm dostosowany do wersji CRC-16
 ; +++++++++++++++++
+
 CR		equ	13d 
 LF		equ	10d
 ARG		equ	3						;maksymalna ilosc argumentow
 BS		equ	512						;buffer size
-POLY	equ	8001h					;wielomian do obliczania sum CRC
+POLY	equ	18005h					;wielomian do obliczania sum CRC
 
 daneA segment
 	tab_dane	db	128	dup (?)		;tablica do ktorej zostana wczytane dane wejsciowe (argumenty z linii polecen)
@@ -39,6 +40,7 @@ daneA segment
 		
 	;------------------
 	;komunikaty i bledy
+	kom_ok  db	"Voila! Checksum saved in output file.",CR,LF,"$"
 	kom_zg  db	"Message: checksums are compatible :)",CR,LF,"$"
 	kom_nzg db	"Message: checksums are not compatible :(",CR,LF,"$"
 	errah	db	"Error: too many arguments!",CR,LF,"$"
@@ -52,9 +54,10 @@ daneA segment
 daneA ends
 
 stosA segment stack
-		dw	256 dup (?)
+		dw	512 dup (?)
 	top	dw	?
 stosA ends
+
 
 code segment
 	;=================
@@ -256,7 +259,7 @@ code segment
 		
 		mov dx,offset fon
 		mov al,1d						;tryb tylko do zapisu
-		mov ah,3dh						;proba otwarcia pliku
+		mov ah,3ch						;proba otwarcia pliku / utworzenie nowego pliku !!!!
 		int 21h
 		jc err_file_open				;obsluga ewentualnego bledu
 		mov ds:[handle2],ax			;uchwyt otrzymany w AX przenies do 'handle2'
@@ -313,7 +316,7 @@ code segment
 			mov ax,ds:[kod]
 			mov ds:[tab_crc+di],ax		;zapisanie obliczonego kodu do tab_crc
 			inc di						;kolejny znak do analizy
-			cmp di,256d					;czy juz wszystkie znaki?
+			cmp di,255d					;czy juz wszystkie znaki?
 			jne outer_loop				;jesli nie, kolejny znak
 		
 	koniec:
@@ -329,6 +332,7 @@ code segment
 	;=================
 	;-- ODWROC_BITY --
 	;odwraca bity w zmiennej 'kod'
+	
 	ODWROC_BITY proc
 		push ax
 		push cx
@@ -411,7 +415,7 @@ code segment
 		xor ax,ax
 		mov ds:[crc],ax				;wyzerowanie 'crc'
 		mov ds:[crc],65535d			;crc = 2^16 - 1
-		mov si,offset tab_crc
+		;mov si,offset tab_crc
 	crc_loop:
 		call GET_CHAR
 		cmp ds:[eof],1d
@@ -423,11 +427,11 @@ code segment
 		xor dx,dx
 		mov dl,ds:[char]				;znak do DX
 		xor ds:[crctmp],dx				;crctmp = (crc & 255) XOR char
-		mov bx,ds:[crctmp]				;powyzsze do BX
-		mov cl,8d
-		shr ds:[crc],cl				;crc = crc>>8
-		mov dx,ds:[si+bx]				;tab_crc[(crc & 255) XOR char]
-		xor ds:[crc],dx				;crc = (crc>>8) XOR tab_crc[(crc & 255) XOR char]
+		mov di,ds:[crctmp]				;powyzsze do DI
+		mov cl,1d
+		shr ds:[crc],cl				;crc = crc>>1
+		mov dx,ds:[tab_crc+di]			;tab_crc[(crc & 255) XOR char]
+		xor ds:[crc],dx				;crc = (crc>>1) XOR tab_crc[(crc & 255) XOR char]
 		
 		jmp crc_loop
 		
@@ -503,6 +507,10 @@ code segment
 		mov ah,40h                     	;przerwanie zapisu do pliku
 		int 21h
 		jc err_file_save                ;w razie problemu skok do komunikatu
+		
+		mov dx,offset kom_ok			;wypisanie komunikatu (obliczono i zapisano sume kontrolna)
+		mov ah,9
+		int 21h
 		
 		pop dx
 		pop cx
